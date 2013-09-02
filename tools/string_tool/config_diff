@@ -1,0 +1,3 @@
+csvfile_1 = output.csv
+csvfile_2 = output2.csv
+output_csv_diff = output.csv.diff

@@ -1,0 +1,4 @@
+to_language = zh-rCN
+search_path = ../../../packages/apps/
+output_filename = output.csv
+backup_filename = backup.zip

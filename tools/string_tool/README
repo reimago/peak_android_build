@@ -1,0 +1,66 @@
+Steps for string tool:
+
+1. run generateCSV.py
+
+    usage: python generateCSV.py <config file name>
+        config file format:
+            to_language = [to languge list, splitted by comma]
+            search_path = [search path, splittd by comma]
+            output_filename = [output csv filename, default: output.csv]
+            backup_filename = [backup zip filename, default: backup.zip]
+
+    description: This script is used to generate CSV file due to the input config file.
+        Item 'to_language' defines the destination language list, for example, 'zh-rCN,ai,hi'.
+        Item 'search_path' defines the paths which will be searched for baselinle xml like 'values/strings.xml'.
+        Item 'output_filename' defines the output csv file name.
+        Item 'backup_filename' defines the name of backup zip file, which will be used to backup the related 'strings.xml'.
+
+    important:
+        The output csv file is separated by comma, is encoded as UTF-8.
+        The firt line is the column names: Path, ID, 2nd ID, en, destination language 1, destination language 2, ...
+        The other lines are the contents.
+        Note that the combination of (ID, 2nd ID) will be unique in one 'strings.xml'. There are 3 kinds of xml node: 'string',
+        'string-array' and 'plurals'. In common cases only 'ID' will be meaningful, e.g. the name of the node. And '2nd ID' will
+        be used in those scenarios:
+            1. 'string' xml node with 'product' attribute: several 'string' nodes share a same name, but their values of 'product'
+            attribute are different. Assume the value of 'product' attribute is 'tablet', the 2nd ID should be 'product_tablet'.
+            2. 'string-array' xml node: 'string-array' xml nodes have several 'item' child nodes. The 2nd IDs of those child
+            nodes should be: 'string-array_1', 'string-array_2', ...
+            3. 'plurals' xml node: 'plurals' xml nodes have several 'item' child nodes with 'quantity' attribute. Assume the value
+            of attribute 'quantity' is 'one', the 2nd ID should be 'plurals_one'.
+
+2. modify csv file
+    
+    usage: CSV file can be revised by tools. For example, 'OpenOffice.org.Calc' can be used. You need to choose UTF-8 as encoding 
+    and comma as separator before editing.
+
+    important:
+        Note that CSV file should be modified carefully otherwise there will be errors when calling writeBack script: contents of 
+        column ID, 2nd ID, en should not be changed; values with 'xliff:g' should be revised carefully so that the 'xliff:g' 
+        parts are kept; special chars should be converted, '<' is mapped to '&gt;', '>' is mapped to '&lt;' and '&' is mapped to '&amp;';
+        style tag should be used carefully, such as '<b></b>', '<i><i/>', '<u><u/>'.
+
+
+3. run writeBack.py
+
+    usage: python writeBack.py <output csv file name>
+
+    description: This script is used to write back 'strings.xml' due to the CSV file.
+
+    
+4. run csvDiff.py
+    usage: python csvDiff.py <diff config file name>
+        config file format:
+            csv_file1 = [old csv file name]
+            csv_file2 = [new csv file name]
+            output_csv_diff = [output diff file name]
+
+    description: This script is used to get the difference between two csv files: the old csv file and the new csv file.
+
+    important: 
+        Note that the output file is a subset of contents of new csv file. Two kinds of lines in the new csv file is put into the output
+        file: line with (ID, 2nd ID) that doesn't exist in the old csv file; line with (ID, 2nd ID) that exists in the old csv file but the
+        baseline value(english value) is updated in the new csv file.
+
+5. restore updated resource files
+    If the updated resource files need to be restored, just run 'unzip backup.zip -d ../../../'
